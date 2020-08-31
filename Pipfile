@@ -11,6 +11,8 @@ flask-sqlalchemy = "*"
 flask-jwt-extended = "*"
 flask-restful = "*"
 marshmallow = "*"
+flask-marshmallow = "*"
+marshmallow-sqlalchemy = "*"
 
 [requires]
 python_version = "3.8"
