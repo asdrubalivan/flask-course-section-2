@@ -2,7 +2,6 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, fresh_jwt_required
 from models.item import ItemModel
 from flask import request
-from marshmallow import ValidationError
 from schemas.item import ItemSchema
 
 NAME_ALREADY_EXISTS = "An item with name '{}' already exists."
@@ -30,10 +29,7 @@ class Item(Resource):
         item_json = request.get_json()
         item_json["name"] = name
 
-        try:
-            item = item_schema.load(item_json)
-        except ValidationError as err:
-            return err.messages, 400
+        item = item_schema.load(item_json)
         try:
             item.save_to_db()
         except:
@@ -59,11 +55,7 @@ class Item(Resource):
             item.price = item_json["price"]
         else:
             item_json["name"] = name
-
-            try:
-                item = item_schema.load(item_json)
-            except ValidationError as err:
-                return err.messages, 400
+            item = item_schema.load(item_json)
 
         item.save_to_db()
 

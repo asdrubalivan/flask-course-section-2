@@ -12,7 +12,6 @@ from flask_jwt_extended import (
 from models.user import UserModel
 from schemas.user import UserSchema
 from blacklist import BLACKLIST
-from marshmallow import ValidationError
 
 BLANK_ERROR = "'{}' cannot be blank."
 USER_ALREADY_EXISTS = "A user with that username already exists."
@@ -28,10 +27,7 @@ user_schema = UserSchema()
 class UserRegister(Resource):
     @classmethod
     def post(cls):
-        try:
-            user = user_schema.load(request.get_json())
-        except ValidationError as err:
-            return err.messages, 400
+        user = user_schema.load(request.get_json())
         if UserModel.find_by_username(user.username):
             return {"message": USER_ALREADY_EXISTS}, 400
         user.save_to_db()
@@ -64,14 +60,9 @@ class User(Resource):
 class UserLogin(Resource):
     @classmethod
     def post(cls):
-        try:
-            json = request.get_json()
-            data = user_schema.load(json)
-        except ValidationError as err:
-            return err.messages, 400
-
+        json = request.get_json()
+        data = user_schema.load(json)
         user = UserModel.find_by_username(data.username)
-
         # this is what the `authenticate()` function did in security.py
         if user and safe_str_cmp(user.password, data.password):
             # identity= is what the identity() function did in security.py—now stored in the JWT
