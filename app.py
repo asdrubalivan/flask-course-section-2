@@ -6,7 +6,14 @@ from marshmallow import ValidationError
 from ma import ma
 from db import db
 from blacklist import BLACKLIST
-from resources.user import UserRegister, UserLogin, User, TokenRefresh, UserLogout, UserConfirm
+from resources.user import (
+    UserRegister,
+    UserLogin,
+    User,
+    TokenRefresh,
+    UserLogout,
+    UserConfirm,
+)
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
 
