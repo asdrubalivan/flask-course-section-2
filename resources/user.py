@@ -12,16 +12,21 @@ from flask_jwt_extended import (
 from models.user import UserModel
 from schemas.user import UserSchema
 from blacklist import BLACKLIST
+import traceback
 
 BLANK_ERROR = "'{}' cannot be blank."
 USER_ALREADY_EXISTS = "A user with that username already exists."
-CREATED_SUCCESSFULLY = "User created successfully."
+EMAIL_ALREADY_EXISTS = "A user with that email already exists."
+CREATED_SUCCESSFULLY = (
+    "User created successfully. An email was sent to confirm user creation"
+)
 USER_NOT_FOUND = "User not found."
 USER_DELETED = "User deleted."
 INVALID_CREDENTIALS = "Invalid credentials!"
 USER_LOGGED_OUT = "User <id={user_id}> successfully logged out."
 NOT_CONFIRMED_ERROR = "You have not confirmed registration, please check your email {}"
 USER_CONFIRMED = "User confirmed successfully"
+FAILED_TO_CREATE_USER = "Internal server error, failed to create user"
 
 user_schema = UserSchema()
 
@@ -32,9 +37,15 @@ class UserRegister(Resource):
         user = user_schema.load(request.get_json())
         if UserModel.find_by_username(user.username):
             return {"message": USER_ALREADY_EXISTS}, 400
-        user.save_to_db()
-
-        return {"message": CREATED_SUCCESSFULLY}, 201
+        if UserModel.find_by_email(user.email):
+            return {"message": EMAIL_ALREADY_EXISTS}, 400
+        try:
+            user.save_to_db()
+            user.send_confirmation_email()
+            return {"message": CREATED_SUCCESSFULLY}, 201
+        except:
+            traceback.print_exc()
+            return {"message": FAILED_TO_CREATE_USER}
 
 
 class User(Resource):
@@ -63,7 +74,7 @@ class UserLogin(Resource):
     @classmethod
     def post(cls):
         json = request.get_json()
-        data = user_schema.load(json)
+        data = user_schema.load(json, partial=("email",))
         user = UserModel.find_by_username(data.username)
         # this is what the `authenticate()` function did in security.py
         if user and safe_str_cmp(user.password, data.password):
