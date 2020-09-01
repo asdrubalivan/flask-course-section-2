@@ -21,6 +21,7 @@ USER_DELETED = "User deleted."
 INVALID_CREDENTIALS = "Invalid credentials!"
 USER_LOGGED_OUT = "User <id={user_id}> successfully logged out."
 NOT_CONFIRMED_ERROR = "You have not confirmed registration, please check your email {}"
+USER_CONFIRMED = "User confirmed successfully"
 
 user_schema = UserSchema()
 
@@ -97,3 +98,14 @@ class TokenRefresh(Resource):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
         return {"access_token": new_token}, 200
+
+
+class UserConfirm(Resource):
+    @classmethod
+    def get(cls, user_id: int):
+        user = UserModel.find_by_id(user_id)
+        if not user:
+            return {"message": USER_NOT_FOUND}, 404
+        user.activated = True
+        user.save_to_db()
+        return {"message": USER_CONFIRMED}, 200
