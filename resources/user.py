@@ -12,6 +12,7 @@ from flask_jwt_extended import (
 from models.user import UserModel
 from schemas.user import UserSchema
 from blacklist import BLACKLIST
+from libs.mailgun import MailgunException
 import traceback
 
 BLANK_ERROR = "'{}' cannot be blank."
@@ -43,6 +44,9 @@ class UserRegister(Resource):
             user.save_to_db()
             user.send_confirmation_email()
             return {"message": CREATED_SUCCESSFULLY}, 201
+        except MailgunException as e:
+            user.delete_from_db()
+            return {"message": str(e)}, 500
         except:
             traceback.print_exc()
             return {"message": FAILED_TO_CREATE_USER}
