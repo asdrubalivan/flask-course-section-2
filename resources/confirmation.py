@@ -34,7 +34,7 @@ class Confirmation(Resource):
         confirmation.save_to_db()
         headers = {"Content-Type": "application/html"}
         return make_response(
-            render_template("confirmation_path.html", email=confirmation.user.email),
+            render_template("confirmation_page.html", email=confirmation.user.email),
             200,
             headers,
         )

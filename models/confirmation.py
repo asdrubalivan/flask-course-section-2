@@ -24,7 +24,7 @@ class ConfirmationModel(db.Model):
 
     @classmethod
     def find_by_id(cls, _id: str) -> "ConfirmationModel":
-        return cls.query.filter(id=_id).first()
+        return cls.query.filter_by(id=_id).first()
 
     @property
     def expired(self):
