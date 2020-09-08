@@ -9,7 +9,7 @@ IMAGE_SET = UploadSet("images", IMAGES)
 
 def save_image(image: FileStorage, folder: str = None, name: str = None) -> str:
     """Takes Filestorage and saves it to a folder"""
-    IMAGE_SET.save(image, folder, name)
+    return IMAGE_SET.save(image, folder, name)
 
 
 def get_path(filename: str, folder: str = None) -> str:
