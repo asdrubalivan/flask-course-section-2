@@ -51,4 +51,15 @@ class Image(Resource):
 
     @jwt_required
     def delete(self, filename: str):
-        pass
+        user_id = get_jwt_identity()
+        folder = f"user_{user_id}"
+        if not image_helper.is_filename_safe(filename):
+            return {"message": gettext("illegal_filename").format(filename)}
+        try:
+            os.remove(image_helper.get_path(filename, folder=folder))
+            return {"message": gettext("image_deleted").format(filename)}, 200
+        except FileNotFoundError:
+            return {"message": gettext("image_not_found").format(filename)}, 404
+        except:
+            traceback.print_exc()
+            return {"message": gettext("image_delete_failed").format(filename)}, 500
