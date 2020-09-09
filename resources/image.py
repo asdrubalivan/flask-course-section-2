@@ -45,7 +45,9 @@ class Image(Resource):
             return {"message": gettext("illegal_filename").format(filename)}
         try:
             print(image_helper.get_path(filename, folder=folder))
-            return send_file(image_helper.get_path(filename, folder=folder)) # No se pone 200 porque tira un error
+            return send_file(
+                image_helper.get_path(filename, folder=folder)
+            )  # No se pone 200 porque tira un error
         except FileNotFoundError:
             return {"message": gettext("image_not_found").format(filename)}, 404
 
@@ -63,3 +65,43 @@ class Image(Resource):
         except:
             traceback.print_exc()
             return {"message": gettext("image_delete_failed").format(filename)}, 500
+
+
+class AvatarUpload(Resource):
+    @jwt_required
+    def put(self):
+        """
+        This endpoint is used to upload user's avatars
+        Uploading a new avatar overrides the existing one
+        """
+        data = image_schema.load(request.files)
+        filename = f"user_{get_jwt_identity()}"
+        folder = "avatars"
+        avatar_path = image_helper.find_image_any_format(filename, folder)
+        if avatar_path:
+            try:
+                os.remove(avatar_path)
+            except:
+                return {"message": gettext("avatar_delete_failed")}, 500
+        try:
+            ext = image_helper.get_extension(data["image"].filename)
+            avatar = filename + ext
+            avatar_path = image_helper.save_image(
+                data["image"], folder=folder, name=avatar
+            )
+            basename = image_helper.get_basename(avatar_path)
+            return {"message": gettext("avatar_uploaded").format(basename)}, 200
+        except UploadNotAllowed:
+            extension = image_helper.get_extension(data["image"])
+            return {"message": gettext("image_illegal_extension").format(extension)}, 400
+
+
+class Avatar(Resource):
+    @classmethod
+    def get(cls, user_id: int):
+        folder = "avatars"
+        filename = f"user_{user_id}"
+        avatar = image_helper.find_image_any_format(filename, folder)
+        if avatar:
+            return send_file(avatar)
+        return {"message": gettext("avatar_not_found")}, 404

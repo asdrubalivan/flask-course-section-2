@@ -18,7 +18,7 @@ from resources.user import (
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
 from resources.confirmation import Confirmation, ConfirmationByUser
-from resources.image import ImageUpload, Image
+from resources.image import ImageUpload, Image, AvatarUpload
 from libs.image_helper import IMAGE_SET
 from dotenv import load_dotenv
 
@@ -64,6 +64,7 @@ api.add_resource(Confirmation, "/user_confirm/<string:confirmation_id>")
 api.add_resource(ConfirmationByUser, "/confirmation/user/<int:user_id>")
 api.add_resource(ImageUpload, "/upload/image")
 api.add_resource(Image, "/image/<string:filename>")
+api.add_resource(AvatarUpload, "/upload/avatar")
 
 if __name__ == "__main__":
     db.init_app(app)
