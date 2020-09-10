@@ -93,7 +93,10 @@ class AvatarUpload(Resource):
             return {"message": gettext("avatar_uploaded").format(basename)}, 200
         except UploadNotAllowed:
             extension = image_helper.get_extension(data["image"])
-            return {"message": gettext("image_illegal_extension").format(extension)}, 400
+            return (
+                {"message": gettext("image_illegal_extension").format(extension)},
+                400,
+            )
 
 
 class Avatar(Resource):

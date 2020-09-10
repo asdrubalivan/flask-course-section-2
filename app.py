@@ -1,9 +1,13 @@
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_uploads import configure_uploads
-from marshmallow import ValidationError
+from libs.image_helper import IMAGE_SET
 import os
+
+
+from marshmallow import ValidationError
 
 from ma import ma
 from db import db
@@ -19,11 +23,14 @@ from resources.item import Item, ItemList
 from resources.store import Store, StoreList
 from resources.confirmation import Confirmation, ConfirmationByUser
 from resources.image import ImageUpload, Image, AvatarUpload
-from libs.image_helper import IMAGE_SET
-from dotenv import load_dotenv
+
+load_dotenv(".env", verbose=True)
+
+from oa import oauth
+from resources.github_login import GithubLogin, GithubAuthorize
 
 app = Flask(__name__)
-load_dotenv(".env", verbose=True)
+app.secret_key = os.environ.get("APP_SECRET_KEY")
 app.config.from_object("default_config")
 app.config.from_envvar("APPLICATION_SETTINGS")
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
@@ -65,8 +72,11 @@ api.add_resource(ConfirmationByUser, "/confirmation/user/<int:user_id>")
 api.add_resource(ImageUpload, "/upload/image")
 api.add_resource(Image, "/image/<string:filename>")
 api.add_resource(AvatarUpload, "/upload/avatar")
+api.add_resource(GithubLogin, "/login/github")
+api.add_resource(GithubAuthorize, "/login/github/authorized")
+db.init_app(app)
 
 if __name__ == "__main__":
-    db.init_app(app)
     ma.init_app(app)
+    oauth.init_app(app)
     app.run(port=5000)
