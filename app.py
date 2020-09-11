@@ -6,7 +6,6 @@ from flask_uploads import configure_uploads
 from libs.image_helper import IMAGE_SET
 import os
 
-
 from marshmallow import ValidationError
 
 from ma import ma
@@ -18,6 +17,7 @@ from resources.user import (
     User,
     TokenRefresh,
     UserLogout,
+    SetPassword,
 )
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
@@ -73,7 +73,9 @@ api.add_resource(ImageUpload, "/upload/image")
 api.add_resource(Image, "/image/<string:filename>")
 api.add_resource(AvatarUpload, "/upload/avatar")
 api.add_resource(GithubLogin, "/login/github")
-api.add_resource(GithubAuthorize, "/login/github/authorized")
+api.add_resource(GithubAuthorize, "/login/github/authorized", endpoint="github.authorize")
+api.add_resource(SetPassword, "/user/password")
+
 db.init_app(app)
 
 if __name__ == "__main__":

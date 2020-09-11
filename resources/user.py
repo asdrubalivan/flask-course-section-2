@@ -8,6 +8,7 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
     get_raw_jwt,
+    fresh_jwt_required,
 )
 from libs.strings import gettext
 from models.confirmation import ConfirmationModel
@@ -72,7 +73,7 @@ class UserLogin(Resource):
         data = user_schema.load(json, partial=("email",))
         user = UserModel.find_by_username(data.username)
         # this is what the `authenticate()` function did in security.py
-        if user and safe_str_cmp(user.password, data.password):
+        if user and user.password and safe_str_cmp(user.password, data.password):
             # identity= is what the identity() function did in security.py—now stored in the JWT
             confirmation = user.most_recent_confirmation
             if confirmation and confirmation.confirmed:
@@ -108,3 +109,17 @@ class TokenRefresh(Resource):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
         return {"access_token": new_token}, 200
+
+
+class SetPassword(Resource):
+    @classmethod
+    @fresh_jwt_required
+    def post(cls):
+        user_json = request.get_json()
+        user_data = user_schema.load(user_json, partial=["email"])
+        user = UserModel.find_by_username(user_data.username)
+        if not user:
+            return {"message": gettext("user_not_found")}, 400
+        user.password = user_data.password
+        user.save_to_db()
+        return {"message": gettext("user_password_updated")}, 201
